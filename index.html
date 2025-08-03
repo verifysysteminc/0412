@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Verificando...</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 100px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Verificando seu dispositivo...</h2>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <script>
+    import { initializeApp } from "firebase/app";
+    const firebaseConfig = {
+   apiKey: "AIzaSyCMFKWtiztDvD5BsplbCtPSMnqX0GRt8_A",
+   authDomain: "rastreio-104af.firebaseapp.com",
+   projectId: "rastreio-104af",
+   storageBucket: "rastreio-104af.firebasestorage.app",
+   messagingSenderId: "992405931160",
+   appId: "1:992405931160:web:e673a6fd95ff0673973ced"
+   };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    function detectarDispositivo() {
+      const userAgent = navigator.userAgent;
+
+      let modelo = "Desconhecido";
+
+      if (userAgent.includes("iPhone")) {
+        if (userAgent.includes("iPhone XR")) modelo = "iPhone XR";
+        else modelo = "iPhone";
+      }
+
+      return modelo;
+    }
+
+    const log = {
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent,
+      dispositivo: detectarDispositivo(),
+      plataforma: navigator.platform
+    };
+
+    db.collection("acessos").add(log)
+      .then(() => {
+        setTimeout(() => {
+          document.body.innerHTML = "<h2>Redirecionando...</h2>";
+          window.location.href = "https://i.ytimg.com/vi/BE00EAcYNTE/hqdefault.jpg?sqp=-oaymwEnCOADEI4CSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLDpMyyyNadPRR7ZlIuz-cSTudKCvw"; // Pode ser seu site, Instagram, etc
+        }, 3000);
+      })
+      .catch(console.error);
+  </script>
+</body>
+</html>
