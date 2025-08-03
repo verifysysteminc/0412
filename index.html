@@ -19,6 +19,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script>
+    
     import { initializeApp } from "firebase/app";
     const firebaseConfig = {
    apiKey: "AIzaSyCMFKWtiztDvD5BsplbCtPSMnqX0GRt8_A",
@@ -34,32 +35,44 @@
 
     function detectarDispositivo() {
       const userAgent = navigator.userAgent;
-
       let modelo = "Desconhecido";
 
       if (userAgent.includes("iPhone")) {
         if (userAgent.includes("iPhone XR")) modelo = "iPhone XR";
         else modelo = "iPhone";
+      } else if (userAgent.includes("Android")) {
+        modelo = "Android";
+      } else if (userAgent.includes("Windows")) {
+        modelo = "Windows";
+      } else if (userAgent.includes("Macintosh")) {
+        modelo = "Mac";
       }
 
       return modelo;
     }
 
+    // Dados do acesso
     const log = {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       dispositivo: detectarDispositivo(),
-      plataforma: navigator.platform
+      plataforma: navigator.platform,
+      idioma: navigator.language,
+      screen: {
+        largura: window.screen.width,
+        altura: window.screen.height
+      }
     };
 
+    // Salva no Firestore
     db.collection("acessos").add(log)
-      .then(() => {
-        setTimeout(() => {
-          document.body.innerHTML = "<h2>Redirecionando...</h2>";
-          window.location.href = "https://i.ytimg.com/vi/BE00EAcYNTE/hqdefault.jpg?sqp=-oaymwEnCOADEI4CSFryq4qpAxkIARUAAIhCGAHYAQHiAQoIGBACGAY4AUAB&rs=AOn4CLDpMyyyNadPRR7ZlIuz-cSTudKCvw"; // Pode ser seu site, Instagram, etc
-        }, 3000);
-      })
       .catch(console.error);
+
+    // Redireciona após 3 segundos
+    setTimeout(() => {
+      document.body.innerHTML = "<h2>Redirecionando...</h2>";
+      window.location.href = "https://dontpad.com/0412igotit";
+    }, 3000);
   </script>
 </body>
 </html>
