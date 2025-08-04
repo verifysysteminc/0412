@@ -69,6 +69,13 @@
   const chat = document.getElementById('chat');
   const input = document.getElementById('msgInput');
 
+  // Gera ou recupera sessionId do visitante
+  let sessionId = localStorage.getItem('sessionId');
+  if (!sessionId) {
+    sessionId = 'sessao-' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('sessionId', sessionId);
+  }
+
   function adicionarMensagem(texto, de = 'you') {
     const div = document.createElement('div');
     div.className = `msg ${de}`;
@@ -81,6 +88,7 @@
     const texto = input.value.trim();
     if (texto) {
       db.collection("mensagens").add({
+        sessionId,
         de: "usuario",
         texto: texto,
         timestamp: new Date().toISOString()
@@ -89,8 +97,9 @@
     }
   }
 
-  // Mostrar mensagens em tempo real
+  // Atualiza o chat com mensagens dessa sessão
   db.collection("mensagens")
+    .where("sessionId", "==", sessionId)
     .orderBy("timestamp")
     .onSnapshot(snapshot => {
       chat.innerHTML = '';
