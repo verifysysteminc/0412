@@ -2,55 +2,80 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Painel do Admin</title>
+  <title>Painel Admin - Chat</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #222;
-      color: #f0f0f0;
       margin: 0;
-      padding: 20px;
+      font-family: sans-serif;
+      display: flex;
+      height: 100vh;
+      background: #1e1e2f;
+      color: white;
     }
-    #chat {
-      max-width: 800px;
-      margin: auto;
-      background: #333;
-      border: 1px solid #555;
+    .sidebar {
+      width: 250px;
+      border-right: 1px solid #444;
+      background-color: #2b2b3c;
+      overflow-y: auto;
+    }
+    .session {
+      padding: 15px;
+      border-bottom: 1px solid #444;
+      cursor: pointer;
+    }
+    .session:hover {
+      background-color: #383850;
+    }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-box {
+      flex: 1;
       padding: 20px;
-      height: 400px;
-      overflow-y: scroll;
+      overflow-y: auto;
     }
     .msg {
-      margin: 5px 0;
+      margin-bottom: 10px;
     }
-    .usuario { color: #4fc3f7; }
-    .admin { color: #81c784; }
-    #inputArea {
-      max-width: 800px;
-      margin: 10px auto 0;
+    .usuario {
+      color: #4fc3f7;
+    }
+    .admin {
+      color: #81c784;
+    }
+    .input-area {
       display: flex;
+      padding: 10px;
+      background: #2b2b3c;
+      border-top: 1px solid #444;
     }
-    #msgInput {
+    .input-area input {
       flex: 1;
       padding: 10px;
       font-size: 16px;
     }
-    #sendBtn {
+    .input-area button {
       padding: 10px;
     }
   </style>
 </head>
 <body>
 
-<h2>Painel de Atendimento</h2>
-<div id="chat"></div>
-
-<div id="inputArea">
-  <input type="text" id="msgInput" placeholder="Digite sua resposta...">
-  <button id="sendBtn">Enviar</button>
+<div class="sidebar" id="sessionList">
+  <h3 style="padding: 15px;">Chats</h3>
 </div>
 
-<!-- Firebase SDK compat -->
+<div class="chat-container">
+  <div class="chat-box" id="chatBox"></div>
+  <div class="input-area">
+    <input type="text" id="msgInput" placeholder="Digite sua resposta..." />
+    <button onclick="enviarMensagem()">Enviar</button>
+  </div>
+</div>
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
@@ -67,42 +92,70 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  const chat = document.getElementById('chat');
-  const input = document.getElementById('msgInput');
-  const sendBtn = document.getElementById('sendBtn');
+  const sessionList = document.getElementById('sessionList');
+  const chatBox = document.getElementById('chatBox');
+  const msgInput = document.getElementById('msgInput');
 
-  function adicionarMensagem(texto, de) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + de;
-  div.textContent = `${de === 'admin' ? 'usuário17' : 'Usuário'}: ${texto}`;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
-}
+  let currentSessionId = null;
+  let unsubscribe = null;
 
+  // Função para renderizar mensagens do chat selecionado
+  function carregarMensagens(sessionId) {
+    currentSessionId = sessionId;
+    chatBox.innerHTML = '';
 
-  // Enviar mensagem como admin
-  sendBtn.onclick = () => {
-    const texto = input.value.trim();
-    if (texto) {
+    if (unsubscribe) unsubscribe(); // para outro chat
+
+    unsubscribe = db.collection("mensagens")
+      .where("sessionId", "==", sessionId)
+      .orderBy("timestamp")
+      .onSnapshot(snapshot => {
+        chatBox.innerHTML = '';
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const div = document.createElement('div');
+          div.className = 'msg ' + msg.de;
+          div.textContent = (msg.de === 'admin' ? 'usuário17' : 'Usuário') + ': ' + msg.texto;
+          chatBox.appendChild(div);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+  }
+
+  // Função para enviar resposta
+  function enviarMensagem() {
+    const texto = msgInput.value.trim();
+    if (texto && currentSessionId) {
       db.collection("mensagens").add({
+        sessionId: currentSessionId,
         de: "admin",
         texto: texto,
         timestamp: new Date().toISOString()
       });
-      input.value = '';
+      msgInput.value = '';
     }
-  };
+  }
 
-  // Escutar mensagens em tempo real
-  db.collection("mensagens")
-    .orderBy("timestamp")
-    .onSnapshot(snapshot => {
-      chat.innerHTML = ''; // limpa e recarrega todas
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        adicionarMensagem(msg.texto, msg.de);
-      });
+  // Carrega lista de sessões únicas
+  db.collection("mensagens").onSnapshot(snapshot => {
+    const sessions = new Set();
+    snapshot.forEach(doc => {
+      const msg = doc.data();
+      if (msg.sessionId) {
+        sessions.add(msg.sessionId);
+      }
     });
+
+    // Renderiza lista
+    sessionList.innerHTML = '<h3 style="padding: 15px;">Chats</h3>';
+    sessions.forEach(sessionId => {
+      const div = document.createElement('div');
+      div.className = 'session';
+      div.textContent = sessionId;
+      div.onclick = () => carregarMensagens(sessionId);
+      sessionList.appendChild(div);
+    });
+  });
 </script>
 
 </body>
