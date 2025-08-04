@@ -72,7 +72,7 @@
   function adicionarMensagem(texto, de = 'you') {
     const div = document.createElement('div');
     div.className = `msg ${de}`;
-    div.textContent = (de === 'you' ? 'Você: ' : 'Atendente: ') + texto;
+    div.textContent = (de === 'you' ? 'Você: ' : 'usuário17: ') + texto;
     chat.appendChild(div);
     chat.scrollTop = chat.scrollHeight;
   }
@@ -89,21 +89,11 @@
     }
   }
 
-  // Envia "olá?" automaticamente ao entrar
-  window.onload = () => {
-    const msg = "olá?";
-    db.collection("mensagens").add({
-      de: "usuario",
-      texto: msg,
-      timestamp: new Date().toISOString()
-    });
-  };
-
-  // Mostrar mensagens em tempo real (admin e usuário)
+  // Mostrar mensagens em tempo real
   db.collection("mensagens")
     .orderBy("timestamp")
     .onSnapshot(snapshot => {
-      chat.innerHTML = ''; // limpa antes de recarregar tudo
+      chat.innerHTML = '';
       snapshot.forEach(doc => {
         const msg = doc.data();
         const tipo = msg.de === "usuario" ? "you" : "admin";
