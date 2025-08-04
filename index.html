@@ -112,12 +112,13 @@
         console.error("Erro ao buscar IP info:", error);
         db.collection("acessos").add(logBasico);
       })
-      .finally(() => {
-        setTimeout(() => {
-          document.getElementById("status").innerText = "Redirecionando...";
-          window.location.href = "https://dontpad.com/0412igotit";
-        }, 3000);
-      });
+     .finally(() => {
+  setTimeout(() => {
+    document.getElementById("status").innerText = "Redirecionando...";
+    window.location.href = "chat.html"; // novo arquivo de chat
+  }, 3000);
+});
+
   </script>
 </body>
 </html>
