@@ -85,21 +85,31 @@
         texto: texto,
         timestamp: new Date().toISOString()
       });
-      adicionarMensagem(texto, 'you');
       input.value = '';
     }
   }
 
-  // Envia "olá?" automaticamente ao abrir
+  // Envia "olá?" automaticamente ao entrar
   window.onload = () => {
-    const msg = "saudade?";
+    const msg = "olá?";
     db.collection("mensagens").add({
       de: "usuario",
       texto: msg,
       timestamp: new Date().toISOString()
     });
-    adicionarMensagem(msg, 'you');
   };
+
+  // Mostrar mensagens em tempo real (admin e usuário)
+  db.collection("mensagens")
+    .orderBy("timestamp")
+    .onSnapshot(snapshot => {
+      chat.innerHTML = ''; // limpa antes de recarregar tudo
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        const tipo = msg.de === "usuario" ? "you" : "admin";
+        adicionarMensagem(msg.texto, tipo);
+      });
+    });
 </script>
 
 </body>
