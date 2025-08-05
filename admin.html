@@ -123,13 +123,13 @@
   }
 
   // Função para enviar resposta
-  function enviarMensagem() {
+function enviarMensagem() {
   const texto = msgInput.value.trim();
   if (texto && currentSessionId) {
-    // Mostra imediatamente no painel
+    // Cria elemento visual com ✔️ enviando
     const div = document.createElement('div');
     div.className = 'msg admin';
-    div.textContent = 'usuário17: ' + texto;
+    div.textContent = `usuário17: ${texto} ✔️`;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 
@@ -139,12 +139,17 @@
       de: "admin",
       texto: texto,
       timestamp: new Date().toISOString()
+    })
+    .then(() => {
+      div.textContent = `usuário17: ${texto} ✔✔️`; // entregue
+    })
+    .catch(() => {
+      div.textContent = `usuário17: ${texto} ❌`; // erro
     });
 
     msgInput.value = '';
   }
 }
-
 
   // Carrega lista de sessões únicas
   db.collection("mensagens").onSnapshot(snapshot => {
