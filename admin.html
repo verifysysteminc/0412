@@ -124,17 +124,27 @@
 
   // Função para enviar resposta
   function enviarMensagem() {
-    const texto = msgInput.value.trim();
-    if (texto && currentSessionId) {
-      db.collection("mensagens").add({
-        sessionId: currentSessionId,
-        de: "admin",
-        texto: texto,
-        timestamp: new Date().toISOString()
-      });
-      msgInput.value = '';
-    }
+  const texto = msgInput.value.trim();
+  if (texto && currentSessionId) {
+    // Mostra imediatamente no painel
+    const div = document.createElement('div');
+    div.className = 'msg admin';
+    div.textContent = 'usuário17: ' + texto;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    // Salva no Firestore
+    db.collection("mensagens").add({
+      sessionId: currentSessionId,
+      de: "admin",
+      texto: texto,
+      timestamp: new Date().toISOString()
+    });
+
+    msgInput.value = '';
   }
+}
+
 
   // Carrega lista de sessões únicas
   db.collection("mensagens").onSnapshot(snapshot => {
