@@ -85,16 +85,23 @@
   }
 
   function enviarMensagem() {
-    const texto = input.value.trim();
-    if (texto) {
-      db.collection("mensagens").add({
-        sessionId,
-        de: "usuario",
-        texto: texto,
-        timestamp: new Date().toISOString()
-      });
-      input.value = '';
-    }
+  const texto = input.value.trim();
+  if (texto) {
+    // Mostra imediatamente no chat
+    adicionarMensagem(texto, "you");
+
+    // Salva no Firestore
+    db.collection("mensagens").add({
+      sessionId,
+      de: "usuario",
+      texto: texto,
+      timestamp: new Date().toISOString()
+    });
+
+    input.value = '';
+  }
+}
+
   }
 
   // Atualiza o chat com mensagens dessa sessão
